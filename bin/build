@@ -1,0 +1,7 @@
+#!/bin/bash
+
+set -e
+
+bin=$(dirname $0)
+
+go build -o $bin/../out/broker github.com/bingosummer/azure_storage_service_broker

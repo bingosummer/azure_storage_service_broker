@@ -1,0 +1,32 @@
+{
+	"ImportPath": "github.com/bingosummer/azure_storage_service_broker",
+	"GoVersion": "go1.5",
+	"Packages": [
+		"./..."
+	],
+	"Deps": [
+		{
+			"ImportPath": "github.com/Azure/azure-sdk-for-go/arm/examples/helpers",
+			"Comment": "v1.2-239-ge2131fa",
+			"Rev": "e2131faf42c3593d3447bf642435ecb906d42c7a"
+		},
+		{
+			"ImportPath": "github.com/Azure/azure-sdk-for-go/arm/storage",
+			"Comment": "v1.2-239-ge2131fa",
+			"Rev": "e2131faf42c3593d3447bf642435ecb906d42c7a"
+		},
+		{
+			"ImportPath": "github.com/Azure/go-autorest/autorest",
+			"Comment": "v0.1-alpha-27-gfe68acd",
+			"Rev": "fe68acd234238c641b119b6132d750c6523cf608"
+		},
+		{
+			"ImportPath": "github.com/gorilla/context",
+			"Rev": "1c83b3eabd45b6d76072b66b746c20815fb2872d"
+		},
+		{
+			"ImportPath": "github.com/gorilla/mux",
+			"Rev": "ee1815431e497d3850809578c93ab6705f1a19f7"
+		}
+	]
+}
