@@ -1,15 +1,15 @@
 package model
 
 type ServiceInstance struct {
-	Id               string `json:"id"`
-	DashboardUrl     string `json:"dashboard_url"`
-	ResourceGroupName	 string `json:"resource_group_name, omitempty"`
-	StorageAccountName             string `json:"storage_account_name, omitempty"`
-	ContainerName             string `json:"container_name, omitempty"`
-	ServiceId        string `json:"service_id"`
-	PlanId           string `json:"plan_id"`
-	OrganizationGuid string `json:"organization_guid"`
-	SpaceGuid        string `json:"space_guid"`
+	Id                 string `json:"id"`
+	DashboardUrl       string `json:"dashboard_url"`
+	ResourceGroupName  string `json:"resource_group_name, omitempty"`
+	StorageAccountName string `json:"storage_account_name, omitempty"`
+	ContainerName      string `json:"container_name, omitempty"`
+	ServiceId          string `json:"service_id"`
+	PlanId             string `json:"plan_id"`
+	OrganizationGuid   string `json:"organization_guid"`
+	SpaceGuid          string `json:"space_guid"`
 
 	LastOperation *LastOperation `json:"last_operation, omitempty"`
 

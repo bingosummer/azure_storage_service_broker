@@ -2,8 +2,8 @@ package azure_client
 
 import (
 	"encoding/json"
-	"os"
 	"errors"
+	"os"
 
 	"github.com/Azure/go-autorest/autorest/azure"
 )

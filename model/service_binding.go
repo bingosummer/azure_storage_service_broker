@@ -6,7 +6,7 @@ type ServiceBinding struct {
 	AppId             string
 	ServicePlanId     string
 	ServiceInstanceId string
-	Credentials	  Credentials
+	Credentials       Credentials
 }
 
 type CreateServiceBindingResponse struct {
@@ -16,7 +16,7 @@ type CreateServiceBindingResponse struct {
 
 type Credentials struct {
 	StorageAccountName string `json:"storage_account_name"`
-	ContainerName   string `json:"container_name"`
-	PrimaryAccessKey string `json:"primary_access_key"`
+	ContainerName      string `json:"container_name"`
+	PrimaryAccessKey   string `json:"primary_access_key"`
 	SecondaryAccessKey string `json:"secondary_access_key"`
 }

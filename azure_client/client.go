@@ -3,8 +3,8 @@ package azure_client
 import (
 	"errors"
 	"fmt"
-	"strings"
 	"net/http"
+	"strings"
 
 	"github.com/Azure/azure-sdk-for-go/arm/resources"
 	"github.com/Azure/azure-sdk-for-go/arm/storage"
@@ -14,10 +14,10 @@ import (
 )
 
 const (
-	RESOURCE_GROUP_NAME_PREFIX = "cloud-foundry-"
+	RESOURCE_GROUP_NAME_PREFIX  = "cloud-foundry-"
 	STORAGE_ACCOUNT_NAME_PREFIX = "cf"
-	CONTAINER_NAME_PREFIX = "cloud-foundry-"
-	LOCATION = "westus"
+	CONTAINER_NAME_PREFIX       = "cloud-foundry-"
+	LOCATION                    = "westus"
 )
 
 type Client interface {
@@ -30,7 +30,7 @@ type Client interface {
 
 type AzureClient struct {
 	ResourceManagementClient *resources.ResourceGroupsClient
-	StorageAccountsClient *storage.StorageAccountsClient
+	StorageAccountsClient    *storage.StorageAccountsClient
 }
 
 func NewClient() *AzureClient {
@@ -50,17 +50,17 @@ func NewClient() *AzureClient {
 
 	sac := storage.NewStorageAccountsClient(c["subscriptionID"])
 	sac.Authorizer = spt
-        sac.PollingMode = autorest.DoNotPoll
+	sac.PollingMode = autorest.DoNotPoll
 
 	return &AzureClient{
 		ResourceManagementClient: &rmc,
-		StorageAccountsClient: &sac,
+		StorageAccountsClient:    &sac,
 	}
 }
 
 func (c *AzureClient) CreateInstance(instanceId string, parameters interface{}) (string, string, error) {
 	var resourceGroupName, storageAccountName, location string
-        var accountType storage.AccountType
+	var accountType storage.AccountType
 
 	switch parameters.(type) {
 	case map[string]interface{}:
@@ -79,27 +79,27 @@ func (c *AzureClient) CreateInstance(instanceId string, parameters interface{}) 
 		}
 
 		if param["account_type"] != nil {
-        		accountType = storage.AccountType(param["account_type"].(string)) 
+			accountType = storage.AccountType(param["account_type"].(string))
 		} else {
-        		accountType = storage.StandardLRS
+			accountType = storage.StandardLRS
 		}
 	default:
 		resourceGroupName = RESOURCE_GROUP_NAME_PREFIX + instanceId
 		location = LOCATION
-        	accountType = storage.StandardLRS
+		accountType = storage.StandardLRS
 	}
 
 	err := c.createResourceGroup(resourceGroupName, location)
 	if err != nil {
 		fmt.Printf("Creating resource group %s failed with error:\n%v\n", resourceGroupName, err)
-                return "", "", err
+		return "", "", err
 	}
 
 	storageAccountName = STORAGE_ACCOUNT_NAME_PREFIX + strings.Replace(instanceId, "-", "", -1)[0:22]
 	err = c.createStorageAccount(resourceGroupName, storageAccountName, location, accountType)
 	if err != nil {
 		fmt.Printf("Creating storage account %s.%s failed with error:\n%v\n", resourceGroupName, storageAccountName, err)
-                return "", "", err
+		return "", "", err
 	}
 
 	return resourceGroupName, storageAccountName, nil
@@ -109,7 +109,7 @@ func (c *AzureClient) GetInstanceState(resourceGroupName, storageAccountName str
 	sa, err := c.StorageAccountsClient.GetProperties(resourceGroupName, storageAccountName)
 	if err != nil {
 		fmt.Printf("Getting instance state failed with error:\n%v\n", err)
-                return "", err
+		return "", err
 	}
 
 	return sa.Properties.ProvisioningState, nil
@@ -126,7 +126,7 @@ func (c *AzureClient) GetAccessKeys(instanceId, resourceGroupName, storageAccoun
 	err2 := c.createContainer(storageAccountName, keys.Key1, containerName)
 	if err2 != nil {
 		fmt.Printf("Creating storage container %s.%s.%s failed with error:\n%v\n", resourceGroupName, storageAccountName, containerName, err2)
-                return "", "", "", err2
+		return "", "", "", err2
 	}
 
 	return keys.Key1, keys.Key2, containerName, nil
@@ -169,9 +169,9 @@ func (c *AzureClient) createResourceGroup(resourceGroupName, location string) er
 	resourceGroup, err := c.ResourceManagementClient.CreateOrUpdate(resourceGroupName, rg)
 	if err != nil {
 		statusCode := resourceGroup.Response.StatusCode
-		if  statusCode != http.StatusAccepted && statusCode != http.StatusCreated {
+		if statusCode != http.StatusAccepted && statusCode != http.StatusCreated {
 			fmt.Printf("Creating resource group %s failed\n", resourceGroupName)
-                	return err
+			return err
 		}
 	}
 
@@ -186,7 +186,7 @@ func (c *AzureClient) createStorageAccount(resourceGroupName, storageAccountName
 			Type: "Microsoft.Storage/storageAccounts"})
 	if err != nil {
 		fmt.Printf("Error: %v", err)
-                return err
+		return err
 	}
 	if !cna.NameAvailable {
 		fmt.Printf("%s is unavailable -- try again\n", storageAccountName)
@@ -217,7 +217,7 @@ func (c *AzureClient) createContainer(storageAccountName, primaryAccessKey, cont
 		return err1
 	}
 
-        blobStorageClient := storageClient.GetBlobService()
+	blobStorageClient := storageClient.GetBlobService()
 	ok, err2 := blobStorageClient.CreateContainerIfNotExists(containerName, storageclient.ContainerAccessTypePrivate)
 	if err2 != nil {
 		fmt.Println("Creating storage container failed")
@@ -227,5 +227,5 @@ func (c *AzureClient) createContainer(storageAccountName, primaryAccessKey, cont
 		fmt.Println("Storage container already existed")
 	}
 
-        return nil
+	return nil
 }

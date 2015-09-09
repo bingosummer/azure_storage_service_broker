@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
-        "github.com/Azure/azure-sdk-for-go/arm/storage"
+	"github.com/Azure/azure-sdk-for-go/arm/storage"
 
 	ac "github.com/bingosummer/azure_storage_service_broker/azure_client"
 	"github.com/bingosummer/azure_storage_service_broker/model"
@@ -54,7 +54,7 @@ func (c *Controller) CreateServiceInstance(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-        serviceInstanceGuid := utils.ExtractVarsFromRequest(r, "service_instance_guid")
+	serviceInstanceGuid := utils.ExtractVarsFromRequest(r, "service_instance_guid")
 
 	resourceGroupName, storageAccountName, err := c.serviceClient.CreateInstance(serviceInstanceGuid, instance.Parameters)
 	if err != nil {
@@ -171,9 +171,9 @@ func (c *Controller) Bind(w http.ResponseWriter, r *http.Request) {
 	}
 
 	credentials := model.Credentials{
-		StorageAccountName:   instance.StorageAccountName,
-		ContainerName:   containerName,
-		PrimaryAccessKey: primaryAccessKey,
+		StorageAccountName: instance.StorageAccountName,
+		ContainerName:      containerName,
+		PrimaryAccessKey:   primaryAccessKey,
 		SecondaryAccessKey: secondaryAccessKey,
 	}
 
@@ -186,7 +186,7 @@ func (c *Controller) Bind(w http.ResponseWriter, r *http.Request) {
 		ServiceId:         instance.ServiceId,
 		ServicePlanId:     instance.PlanId,
 		ServiceInstanceId: instance.Id,
-		Credentials:	   credentials,
+		Credentials:       credentials,
 	}
 
 	err = utils.MarshalAndRecord(c.bindingMap, conf.DataPath, conf.ServiceBindingsFileName)
