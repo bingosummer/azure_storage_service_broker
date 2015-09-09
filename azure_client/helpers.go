@@ -2,16 +2,10 @@ package azure_client
 
 import (
 	"encoding/json"
-	"fmt"
-	"io/ioutil"
 	"os"
-	"os/user"
+	"errors"
 
 	"github.com/Azure/go-autorest/autorest/azure"
-)
-
-const (
-	credentialsPath = "/.azure/credentials.json"
 )
 
 // ToJSON returns the passed item as a pretty-printed JSON string. If any JSON error occurs,
@@ -27,53 +21,34 @@ func NewServicePrincipalTokenFromCredentials(c map[string]string, scope string) 
 	return azure.NewServicePrincipalToken(c["clientID"], c["clientSecret"], c["tenantID"], scope)
 }
 
-// LoadCredentials reads credentials from a ~/.azure/credentials.json file. See the accompanying
-// credentials_sample.json file for an example.
-//
-// Note: Storing crendentials in a local file must be secured and not shared. It is used here
-// simply to reduce code in the examples.
+// LoadCredentials reads credentials from environment variables
 func LoadCredentials() (map[string]string, error) {
-	u, err := user.Current()
-	if err != nil {
-		return nil, fmt.Errorf("ERROR: Unable to determine current user")
+	credentials := make(map[string]string)
+
+	subscriptionId := os.Getenv("subscriptionID")
+	if subscriptionId == "" {
+		return credentials, errors.New("No subscriptionID provided in environment variables")
 	}
 
-	n := u.HomeDir + credentialsPath
-	f, err := os.Open(n)
-	if err != nil {
-		return nil, fmt.Errorf("ERROR: Unable to locate or open Azure credentials at %s (%v)", n, err)
+	tenantId := os.Getenv("tenantID")
+	if tenantId == "" {
+		return credentials, errors.New("No tenantID provided in environment variables")
 	}
 
-	b, err := ioutil.ReadAll(f)
-	if err != nil {
-		return nil, fmt.Errorf("ERROR: Unable to read %s (%v)", n, err)
+	clientId := os.Getenv("clientID")
+	if clientId == "" {
+		return credentials, errors.New("No clientID provided in environment variables")
 	}
 
-	c := map[string]interface{}{}
-	err = json.Unmarshal(b, &c)
-	if err != nil {
-		return nil, fmt.Errorf("ERROR: %s contained invalid JSON (%s)", n, err)
+	clientSecret := os.Getenv("clientSecret")
+	if clientSecret == "" {
+		return credentials, errors.New("No clientSecret provided in environment variables")
 	}
 
-	return ensureValueStrings(c), nil
-}
+	credentials["subscriptionID"] = subscriptionId
+	credentials["tenantID"] = tenantId
+	credentials["clientID"] = clientId
+	credentials["clientSecret"] = clientSecret
 
-func ensureValueStrings(mapOfInterface map[string]interface{}) map[string]string {
-	mapOfStrings := make(map[string]string)
-	for key, value := range mapOfInterface {
-		mapOfStrings[key] = ensureValueString(value)
-	}
-	return mapOfStrings
-}
-
-func ensureValueString(value interface{}) string {
-	if value == nil {
-		return ""
-	}
-	switch v := value.(type) {
-	case string:
-		return v
-	default:
-		return fmt.Sprintf("%v", v)
-	}
+	return credentials, nil
 }
