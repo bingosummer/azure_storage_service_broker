@@ -21,8 +21,8 @@ func NewServicePrincipalTokenFromCredentials(c map[string]string, scope string) 
 	return azure.NewServicePrincipalToken(c["clientID"], c["clientSecret"], c["tenantID"], scope)
 }
 
-// LoadCredentials reads credentials from environment variables
-func LoadCredentials() (map[string]string, error) {
+// LoadAzureCredentials reads credentials from environment variables
+func LoadAzureCredentials() (map[string]string, error) {
 	credentials := make(map[string]string)
 
 	subscriptionId := os.Getenv("subscriptionID")

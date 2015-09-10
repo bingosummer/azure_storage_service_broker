@@ -34,7 +34,7 @@ type AzureClient struct {
 }
 
 func NewClient() *AzureClient {
-	c, err := LoadCredentials()
+	c, err := LoadAzureCredentials()
 	if err != nil {
 		fmt.Printf("Error: %v\n", err)
 	}
