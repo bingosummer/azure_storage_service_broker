@@ -1,8 +1,10 @@
 package web_server
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
+	"os"
 
 	"github.com/Azure/azure-sdk-for-go/arm/storage"
 
@@ -33,8 +35,14 @@ func CreateController(instanceMap map[string]*model.ServiceInstance, bindingMap 
 func (c *Controller) Catalog(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("Get Service Broker Catalog...")
 
+	statusCode, err := authentication(r)
+	if err != nil {
+		w.WriteHeader(statusCode)
+		return
+	}
+
 	var catalog model.Catalog
-	err := utils.ReadAndUnmarshal(&catalog, conf.CatalogPath, "catalog.json")
+	err = utils.ReadAndUnmarshal(&catalog, conf.CatalogPath, "catalog.json")
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
@@ -46,9 +54,15 @@ func (c *Controller) Catalog(w http.ResponseWriter, r *http.Request) {
 func (c *Controller) CreateServiceInstance(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("Create Service Instance...")
 
+	statusCode, err := authentication(r)
+	if err != nil {
+		w.WriteHeader(statusCode)
+		return
+	}
+
 	var instance model.ServiceInstance
 
-	err := utils.ProvisionDataFromRequest(r, &instance)
+	err = utils.ProvisionDataFromRequest(r, &instance)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
@@ -89,6 +103,12 @@ func (c *Controller) CreateServiceInstance(w http.ResponseWriter, r *http.Reques
 func (c *Controller) GetServiceInstance(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("Get Service Instance State....")
 
+	statusCode, err := authentication(r)
+	if err != nil {
+		w.WriteHeader(statusCode)
+		return
+	}
+
 	instanceId := utils.ExtractVarsFromRequest(r, "service_instance_guid")
 	instance := c.instanceMap[instanceId]
 	if instance == nil {
@@ -123,6 +143,12 @@ func (c *Controller) GetServiceInstance(w http.ResponseWriter, r *http.Request) 
 func (c *Controller) RemoveServiceInstance(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("Remove Service Instance...")
 
+	statusCode, err := authentication(r)
+	if err != nil {
+		w.WriteHeader(statusCode)
+		return
+	}
+
 	instanceId := utils.ExtractVarsFromRequest(r, "service_instance_guid")
 	instance := c.instanceMap[instanceId]
 	if instance == nil {
@@ -130,7 +156,7 @@ func (c *Controller) RemoveServiceInstance(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	err := c.serviceClient.DeleteInstance(instance.ResourceGroupName, instance.StorageAccountName)
+	err = c.serviceClient.DeleteInstance(instance.ResourceGroupName, instance.StorageAccountName)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
@@ -154,6 +180,12 @@ func (c *Controller) RemoveServiceInstance(w http.ResponseWriter, r *http.Reques
 
 func (c *Controller) Bind(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("Bind Service Instance...")
+
+	statusCode, err := authentication(r)
+	if err != nil {
+		w.WriteHeader(statusCode)
+		return
+	}
 
 	bindingId := utils.ExtractVarsFromRequest(r, "service_binding_guid")
 	instanceId := utils.ExtractVarsFromRequest(r, "service_instance_guid")
@@ -201,6 +233,12 @@ func (c *Controller) Bind(w http.ResponseWriter, r *http.Request) {
 func (c *Controller) UnBind(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("Unbind Service Instance...")
 
+	statusCode, err := authentication(r)
+	if err != nil {
+		w.WriteHeader(statusCode)
+		return
+	}
+
 	bindingId := utils.ExtractVarsFromRequest(r, "service_binding_guid")
 	instanceId := utils.ExtractVarsFromRequest(r, "service_instance_guid")
 	instance := c.instanceMap[instanceId]
@@ -209,7 +247,7 @@ func (c *Controller) UnBind(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err := c.serviceClient.RegenerateAccessKeys(instance.ResourceGroupName, instance.StorageAccountName)
+	err = c.serviceClient.RegenerateAccessKeys(instance.ResourceGroupName, instance.StorageAccountName)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
@@ -233,4 +271,37 @@ func (c *Controller) deleteAssociatedBindings(instanceId string) error {
 	}
 
 	return utils.MarshalAndRecord(c.bindingMap, conf.DataPath, conf.ServiceBindingsFileName)
+}
+
+// Private
+func authentication(r *http.Request) (int, error) {
+	authUsername, authPassword, err := loadAuthCredentials()
+	if err != nil {
+		return http.StatusInternalServerError, err
+	}
+
+	username, password, ok := r.BasicAuth()
+	if !ok {
+		return http.StatusUnauthorized, errors.New("No username and password provided in the request's Authorization header")
+	}
+
+	if username != authUsername || password != authPassword {
+		return http.StatusUnauthorized, errors.New("The username and password are invalid")
+	}
+
+	return 0, nil
+}
+
+func loadAuthCredentials() (string, string, error) {
+	username := os.Getenv("authUsername")
+	if username == "" {
+		return "", "", errors.New("No auth_username provided in environment variables")
+	}
+
+	password := os.Getenv("authPassword")
+	if password == "" {
+		return "", "", errors.New("No auth_password provided in environment variables")
+	}
+
+	return username, password, nil
 }
