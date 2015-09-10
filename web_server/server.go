@@ -61,7 +61,7 @@ func loadServiceBindings() map[string]*model.ServiceBinding {
 	var bindingMap map[string]*model.ServiceBinding
 
 	err := utils.ReadAndUnmarshal(&bindingMap, conf.DataPath, conf.ServiceBindingsFileName)
-	if err != nil {
+	if err != nil && os.IsNotExist(err) {
 		fmt.Printf("WARNING: key map data file '%s' does not exist: \n", conf.ServiceBindingsFileName)
 		bindingMap = make(map[string]*model.ServiceBinding)
 	}
