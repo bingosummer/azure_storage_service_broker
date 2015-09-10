@@ -6,12 +6,17 @@
 	],
 	"Deps": [
 		{
-			"ImportPath": "github.com/Azure/azure-sdk-for-go/arm/examples/helpers",
+			"ImportPath": "github.com/Azure/azure-sdk-for-go/arm/resources",
 			"Comment": "v1.2-239-ge2131fa",
 			"Rev": "e2131faf42c3593d3447bf642435ecb906d42c7a"
 		},
 		{
 			"ImportPath": "github.com/Azure/azure-sdk-for-go/arm/storage",
+			"Comment": "v1.2-239-ge2131fa",
+			"Rev": "e2131faf42c3593d3447bf642435ecb906d42c7a"
+		},
+		{
+			"ImportPath": "github.com/Azure/azure-sdk-for-go/storage",
 			"Comment": "v1.2-239-ge2131fa",
 			"Rev": "e2131faf42c3593d3447bf642435ecb906d42c7a"
 		},
