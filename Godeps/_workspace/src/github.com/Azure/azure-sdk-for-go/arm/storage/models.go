@@ -76,7 +76,7 @@ const (
 // The CheckNameAvailability operation response.
 type CheckNameAvailabilityResult struct {
 	autorest.Response `json:"-"`
-	NameAvailable     bool   `json:"nameAvailable,omitempty"`
+	NameAvailable     string `json:"nameAvailable,omitempty"`
 	Reason            Reason `json:"reason,omitempty"`
 	Message           string `json:"message,omitempty"`
 }
