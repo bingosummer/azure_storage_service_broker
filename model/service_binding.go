@@ -1,11 +1,11 @@
 package model
 
 type ServiceBinding struct {
-	Id                string
-	ServiceId         string
-	AppId             string
-	ServicePlanId     string
-	ServiceInstanceId string
+	Id                string `json:"id"`
+	ServiceId         string `json:"service_id"`
+	AppId             string `json:"app_id"`
+	ServicePlanId     string `json:"service_plan_id"`
+	ServiceInstanceId string `json:"service_instance_id"`
 	Credentials       Credentials
 }
 
