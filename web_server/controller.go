@@ -133,6 +133,12 @@ func (c *Controller) GetServiceInstance(w http.ResponseWriter, r *http.Request) 
 		instance.LastOperation.Description = "failed to create service instance"
 	}
 
+	err = utils.MarshalAndRecord(c.instanceMap, conf.DataPath, conf.ServiceInstancesFileName)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
 	response := model.CreateServiceInstanceResponse{
 		DashboardUrl:  instance.DashboardUrl,
 		LastOperation: instance.LastOperation,
