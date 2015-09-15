@@ -20,6 +20,10 @@ func main() {
 	}
 
 	// Step3. Start Server
-	server := webs.CreateServer()
+	server := webs.NewServer()
+	if server == nil {
+		panic("Error creating a server...")
+	}
+
 	server.Start()
 }

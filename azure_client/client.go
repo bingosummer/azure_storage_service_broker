@@ -37,11 +37,13 @@ func NewClient() *AzureClient {
 	c, err := LoadAzureCredentials()
 	if err != nil {
 		fmt.Printf("Error: %v\n", err)
+		return nil
 	}
 
 	spt, err := NewServicePrincipalTokenFromCredentials(c, azure.AzureResourceManagerScope)
 	if err != nil {
 		fmt.Printf("Error: %v\n", err)
+		return nil
 	}
 
 	rmc := resources.NewResourceGroupsClient(c["subscriptionID"])

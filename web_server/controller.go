@@ -25,11 +25,16 @@ type Controller struct {
 	bindingMap  map[string]*model.ServiceBinding
 }
 
-func CreateController(instanceMap map[string]*model.ServiceInstance, bindingMap map[string]*model.ServiceBinding) *Controller {
+func NewController(instanceMap map[string]*model.ServiceInstance, bindingMap map[string]*model.ServiceBinding) *Controller {
+	serviceClient := ac.NewClient()
+	if serviceClient == nil {
+		return nil
+	}
+
 	return &Controller{
 		instanceMap:   instanceMap,
 		bindingMap:    bindingMap,
-		serviceClient: ac.NewClient(),
+		serviceClient: serviceClient,
 	}
 }
 

@@ -20,8 +20,13 @@ type Server struct {
 	controller *Controller
 }
 
-func CreateServer() *Server {
-	return &Server{controller: CreateController(loadServiceInstances(), loadServiceBindings())}
+func NewServer() *Server {
+	controller := NewController(loadServiceInstances(), loadServiceBindings())
+	if controller == nil {
+		return nil
+	}
+
+	return &Server{controller: controller}
 }
 
 func (s *Server) Start() {
