@@ -23,7 +23,7 @@ const (
 type Client interface {
 	CreateInstance(instanceId string, parameters interface{}) (string, string, error)
 	GetInstanceState(resourceGroupName, storageAccountName string) (storage.ProvisioningState, error)
-	GetAccessKeys(resourceGroupName, storageAccountName, containerName string) (string, string, string, error)
+	GetAccessKeys(resourceGroupName, storageAccountName, containerName string, containerAccessType storageclient.ContainerAccessType) (string, string, string, error)
 	DeleteInstance(resourceGroupName, storageAccountName string) error
 	RegenerateAccessKeys(resourceGroupName, storageAccountName string) error
 }
@@ -115,7 +115,7 @@ func (c *AzureClient) GetInstanceState(resourceGroupName, storageAccountName str
 	return sa.Properties.ProvisioningState, nil
 }
 
-func (c *AzureClient) GetAccessKeys(instanceId, resourceGroupName, storageAccountName string) (string, string, string, error) {
+func (c *AzureClient) GetAccessKeys(instanceId, resourceGroupName, storageAccountName string, containerAccessType storageclient.ContainerAccessType) (string, string, string, error) {
 	keys, err1 := c.StorageAccountsClient.ListKeys(resourceGroupName, storageAccountName)
 	if err1 != nil {
 		fmt.Printf("Getting access keys of %s.%s failed with error:\n%v\n", resourceGroupName, storageAccountName, err1)
@@ -123,7 +123,7 @@ func (c *AzureClient) GetAccessKeys(instanceId, resourceGroupName, storageAccoun
 	}
 
 	containerName := CONTAINER_NAME_PREFIX + instanceId
-	err2 := c.createContainer(storageAccountName, keys.Key1, containerName)
+	err2 := c.createContainer(storageAccountName, keys.Key1, containerName, containerAccessType)
 	if err2 != nil {
 		fmt.Printf("Creating storage container %s.%s.%s failed with error:\n%v\n", resourceGroupName, storageAccountName, containerName, err2)
 		return "", "", "", err2
@@ -210,7 +210,7 @@ func (c *AzureClient) createStorageAccount(resourceGroupName, storageAccountName
 	return nil
 }
 
-func (c *AzureClient) createContainer(storageAccountName, primaryAccessKey, containerName string) error {
+func (c *AzureClient) createContainer(storageAccountName, primaryAccessKey, containerName string, containerAccessType storageclient.ContainerAccessType) error {
 	storageClient, err1 := storageclient.NewBasicClient(storageAccountName, primaryAccessKey)
 	if err1 != nil {
 		fmt.Println("Creating storage client failed")
@@ -218,7 +218,7 @@ func (c *AzureClient) createContainer(storageAccountName, primaryAccessKey, cont
 	}
 
 	blobStorageClient := storageClient.GetBlobService()
-	ok, err2 := blobStorageClient.CreateContainerIfNotExists(containerName, storageclient.ContainerAccessTypePrivate)
+	ok, err2 := blobStorageClient.CreateContainerIfNotExists(containerName, containerAccessType)
 	if err2 != nil {
 		fmt.Println("Creating storage container failed")
 		return err2

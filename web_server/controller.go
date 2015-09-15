@@ -7,6 +7,7 @@ import (
 	"os"
 
 	"github.com/Azure/azure-sdk-for-go/arm/storage"
+	storageclient "github.com/Azure/azure-sdk-for-go/storage"
 
 	ac "github.com/bingosummer/azure_storage_service_broker/azure_client"
 	"github.com/bingosummer/azure_storage_service_broker/model"
@@ -70,6 +71,20 @@ func (c *Controller) CreateServiceInstance(w http.ResponseWriter, r *http.Reques
 
 	serviceInstanceGuid := utils.ExtractVarsFromRequest(r, "service_instance_guid")
 
+	var containerAccessType storageclient.ContainerAccessType
+	switch instance.Parameters.(type) {
+	case map[string]interface{}:
+		param := instance.Parameters.(map[string]interface{})
+
+		if param["container_access_type"] != nil {
+			containerAccessType = storageclient.ContainerAccessType(param["container_access_type"].(string))
+		} else {
+			containerAccessType = storageclient.ContainerAccessTypePrivate
+		}
+	default:
+		containerAccessType = storageclient.ContainerAccessTypePrivate
+	}
+
 	resourceGroupName, storageAccountName, err := c.serviceClient.CreateInstance(serviceInstanceGuid, instance.Parameters)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
@@ -78,6 +93,7 @@ func (c *Controller) CreateServiceInstance(w http.ResponseWriter, r *http.Reques
 
 	instance.ResourceGroupName = resourceGroupName
 	instance.StorageAccountName = storageAccountName
+	instance.ContainerAccessType = containerAccessType
 	instance.DashboardUrl = "http://dashbaord_url"
 	instance.Id = serviceInstanceGuid
 	instance.LastOperation = &model.LastOperation{
@@ -202,7 +218,7 @@ func (c *Controller) Bind(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	primaryAccessKey, secondaryAccessKey, containerName, err := c.serviceClient.GetAccessKeys(instanceId, instance.ResourceGroupName, instance.StorageAccountName)
+	primaryAccessKey, secondaryAccessKey, containerName, err := c.serviceClient.GetAccessKeys(instanceId, instance.ResourceGroupName, instance.StorageAccountName, instance.ContainerAccessType)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
