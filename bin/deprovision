@@ -1,3 +1,9 @@
 #!/bin/bash
 
-http --auth-type basic --auth $1:$2 DELETE 127.0.0.1:8001/v2/service_instances/11111111-11111111-11111111-11111111
+set -e
+
+bin=$(dirname $0)
+
+instance_id=`cat $bin/instance_id`
+
+http --auth-type basic --auth $authUsername:$authPassword DELETE 127.0.0.1:8001/v2/service_instances/$instance_id
