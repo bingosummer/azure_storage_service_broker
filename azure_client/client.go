@@ -190,7 +190,7 @@ func (c *AzureClient) createStorageAccount(resourceGroupName, storageAccountName
 		fmt.Printf("Error: %v", err)
 		return err
 	}
-	if cna.NameAvailable != "true" {
+	if !cna.NameAvailable {
 		fmt.Printf("%s is unavailable -- try again\n", storageAccountName)
 		return errors.New(storageAccountName + " is unavailable")
 	}
