@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"strconv"
+	"strings"
 
 	"github.com/Azure/azure-sdk-for-go/arm/storage"
 	storageclient "github.com/Azure/azure-sdk-for-go/storage"
@@ -16,6 +18,8 @@ import (
 
 const (
 	DEFAULT_POLLING_INTERVAL_SECONDS = 10
+	X_BROKER_API_VERSION_NAME        = "X-Broker-Api-Version"
+	X_BROKER_API_VERSION             = "2.5"
 )
 
 type Controller struct {
@@ -46,6 +50,15 @@ func (c *Controller) Catalog(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(statusCode)
 		return
 	}
+
+	apiVersion := r.Header.Get(X_BROKER_API_VERSION_NAME)
+	supported := validateApiVersion(apiVersion, X_BROKER_API_VERSION)
+	if !supported {
+		fmt.Printf("API Version is %s, not supported.\n", apiVersion)
+		w.WriteHeader(http.StatusPreconditionFailed)
+		return
+	}
+	fmt.Println("API Version is " + apiVersion)
 
 	var catalog model.Catalog
 	err = utils.ReadAndUnmarshal(&catalog, conf.CatalogPath, "catalog.json")
@@ -331,4 +344,25 @@ func loadAuthCredentials() (string, string, error) {
 	}
 
 	return username, password, nil
+}
+
+func validateApiVersion(actual, expected string) bool {
+	apiVersion := strings.Split(actual, ".")
+	majorApiVersionActual, err1 := strconv.Atoi(apiVersion[0])
+	minorApiVersionActual, err2 := strconv.Atoi(apiVersion[1])
+	if err1 != nil || err2 != nil {
+		return false
+	}
+
+	apiVersion = strings.Split(expected, ".")
+	majorApiVersionExpected, _ := strconv.Atoi(apiVersion[0])
+	minorApiVersionExpected, _ := strconv.Atoi(apiVersion[1])
+
+	if majorApiVersionActual < majorApiVersionExpected {
+		return false
+	}
+	if majorApiVersionActual == majorApiVersionExpected && minorApiVersionActual < minorApiVersionExpected {
+		return false
+	}
+	return true
 }

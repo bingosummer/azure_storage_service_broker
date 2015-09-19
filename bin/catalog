@@ -1,3 +1,3 @@
 #!/bin/bash
 
-http --auth-type basic --auth $authUsername:$authPassword GET 127.0.0.1:8001/v2/catalog
+http --auth-type basic --auth $authUsername:$authPassword GET 127.0.0.1:8001/v2/catalog X-Broker-Api-Version:2.5
