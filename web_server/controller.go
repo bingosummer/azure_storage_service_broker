@@ -157,25 +157,29 @@ func (c *Controller) GetServiceInstance(w http.ResponseWriter, r *http.Request) 
 	instanceId := utils.ExtractVarsFromRequest(r, "service_instance_guid")
 	instance := c.instanceMap[instanceId]
 	if instance == nil {
-		w.WriteHeader(http.StatusNotFound)
+		w.WriteHeader(http.StatusGone)
 		return
 	}
 
 	state, err := c.serviceClient.GetInstanceState(instance.ResourceGroupName, instance.StorageAccountName)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
+		if strings.Contains(err.Error(), "404") {
+			w.WriteHeader(http.StatusGone)
+		} else {
+			w.WriteHeader(http.StatusInternalServerError)
+		}
 		return
 	}
 
 	if state == storage.Creating || state == storage.ResolvingDNS {
 		instance.LastOperation.State = "in progress"
-		instance.LastOperation.Description = "creating service instance..."
+		instance.LastOperation.Description = "Creating service instance, state: " + state
 	} else if state == storage.Succeeded {
 		instance.LastOperation.State = "succeeded"
-		instance.LastOperation.Description = "successfully created service instance"
+		instance.LastOperation.Description = "Successfully created service instance"
 	} else {
 		instance.LastOperation.State = "failed"
-		instance.LastOperation.Description = "failed to create service instance"
+		instance.LastOperation.Description = "Failed to create service instance"
 	}
 
 	err = utils.MarshalAndRecord(c.instanceMap, conf.DataPath, conf.ServiceInstancesFileName)
