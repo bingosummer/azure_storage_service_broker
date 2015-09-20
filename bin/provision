@@ -7,4 +7,4 @@ bin=$(dirname $0)
 instance_id=`python -c 'import uuid; print str(uuid.uuid1())'`
 `echo $instance_id > $bin/instance_id`
 
-http --auth-type basic --auth $authUsername:$authPassword PUT 127.0.0.1:8001/v2/service_instances/$instance_id service_id=1 plan_id=1 organization_guid=1 space_guid=1 parameters:='{}'
+http --auth-type basic --auth $authUsername:$authPassword PUT 127.0.0.1:8001/v2/service_instances/$instance_id accepts_incomplete="true" service_id=1 plan_id=1 organization_guid=1 space_guid=1 parameters:='{}'

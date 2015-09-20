@@ -83,7 +83,18 @@ func (c *Controller) CreateServiceInstance(w http.ResponseWriter, r *http.Reques
 
 	err = utils.ProvisionDataFromRequest(r, &instance)
 	if err != nil {
+		fmt.Println("Failed to provision data from request")
 		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	acceptsIncomplete := instance.AcceptsIncomplete
+	if acceptsIncomplete != "true" {
+		fmt.Println("Only asynchronous provisioning is supported")
+		response := make(map[string]string)
+		response["error"] = "AsyncRequired"
+		response["description"] = "This service plan requires client support for asynchronous service operations."
+		utils.WriteResponse(w, 422, response)
 		return
 	}
 

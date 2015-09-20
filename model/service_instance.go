@@ -10,6 +10,7 @@ type ServiceInstance struct {
 	ResourceGroupName   string                            `json:"resource_group_name, omitempty"`
 	StorageAccountName  string                            `json:"storage_account_name, omitempty"`
 	ContainerAccessType storageclient.ContainerAccessType `json:"container_access_type, omitempty"`
+	AcceptsIncomplete   string                            `json:"accepts_incomplete"`
 	ServiceId           string                            `json:"service_id"`
 	PlanId              string                            `json:"plan_id"`
 	OrganizationGuid    string                            `json:"organization_guid"`
