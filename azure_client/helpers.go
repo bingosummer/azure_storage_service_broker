@@ -1,19 +1,18 @@
 package azure_client
 
 import (
-	"encoding/json"
 	"errors"
 	"os"
 
 	"github.com/Azure/go-autorest/autorest/azure"
 )
 
-// ToJSON returns the passed item as a pretty-printed JSON string. If any JSON error occurs,
-// it returns the empty string.
-func ToJSON(v interface{}) string {
-	j, _ := json.MarshalIndent(v, "", "  ")
-	return string(j)
-}
+var (
+	ErrNotFoundSubscriptionID = errors.New("No subscriptionID provided in environment variables")
+	ErrNotFoundTenantID       = errors.New("No tenantID provided in environment variables")
+	ErrNotFoundClientID       = errors.New("No clientID provided in environment variables")
+	ErrNotFoundClientSecret   = errors.New("No clientSecret provided in environment variables")
+)
 
 // NewServicePrincipalTokenFromCredentials creates a new ServicePrincipalToken using values of the
 // passed credentials map.
@@ -23,28 +22,27 @@ func NewServicePrincipalTokenFromCredentials(c map[string]string, scope string) 
 
 // LoadAzureCredentials reads credentials from environment variables
 func LoadAzureCredentials() (map[string]string, error) {
-	credentials := make(map[string]string)
-
 	subscriptionId := os.Getenv("subscriptionID")
 	if subscriptionId == "" {
-		return credentials, errors.New("No subscriptionID provided in environment variables")
+		return nil, ErrNotFoundSubscriptionID
 	}
 
 	tenantId := os.Getenv("tenantID")
 	if tenantId == "" {
-		return credentials, errors.New("No tenantID provided in environment variables")
+		return nil, ErrNotFoundTenantID
 	}
 
 	clientId := os.Getenv("clientID")
 	if clientId == "" {
-		return credentials, errors.New("No clientID provided in environment variables")
+		return nil, ErrNotFoundClientID
 	}
 
 	clientSecret := os.Getenv("clientSecret")
 	if clientSecret == "" {
-		return credentials, errors.New("No clientSecret provided in environment variables")
+		return nil, ErrNotFoundClientSecret
 	}
 
+	credentials := make(map[string]string)
 	credentials["subscriptionID"] = subscriptionId
 	credentials["tenantID"] = tenantId
 	credentials["clientID"] = clientId

@@ -173,7 +173,7 @@ func (c *Controller) GetServiceInstance(w http.ResponseWriter, r *http.Request) 
 
 	if state == storage.Creating || state == storage.ResolvingDNS {
 		instance.LastOperation.State = "in progress"
-		instance.LastOperation.Description = "Creating service instance, state: " + state
+		instance.LastOperation.Description = "Creating service instance, state: " + string(state)
 	} else if state == storage.Succeeded {
 		instance.LastOperation.State = "succeeded"
 		instance.LastOperation.Description = "Successfully created service instance"
