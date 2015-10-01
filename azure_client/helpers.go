@@ -1,19 +1,11 @@
 package azure_client
 
 import (
-	"encoding/json"
 	"errors"
 	"os"
 
 	"github.com/Azure/go-autorest/autorest/azure"
 )
-
-// ToJSON returns the passed item as a pretty-printed JSON string. If any JSON error occurs,
-// it returns the empty string.
-func ToJSON(v interface{}) string {
-	j, _ := json.MarshalIndent(v, "", "  ")
-	return string(j)
-}
 
 // NewServicePrincipalTokenFromCredentials creates a new ServicePrincipalToken using values of the
 // passed credentials map.
