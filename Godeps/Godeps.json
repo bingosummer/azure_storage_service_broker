@@ -32,6 +32,16 @@
 		{
 			"ImportPath": "github.com/gorilla/mux",
 			"Rev": "ee1815431e497d3850809578c93ab6705f1a19f7"
+		},
+		{
+			"ImportPath": "github.com/onsi/ginkgo",
+			"Comment": "v1.2.0-14-g1b59c57",
+			"Rev": "1b59c57df76ede42c08590546916e6a18685857d"
+		},
+		{
+			"ImportPath": "github.com/onsi/gomega",
+			"Comment": "v1.0-55-g6331bf5",
+			"Rev": "6331bf5a5b5e7a832348789eb3cedff7a6917103"
 		}
 	]
 }
