@@ -1,100 +1,83 @@
-package azure_client_test
+package azure_client
 
 import (
 	"os"
-
-	. "github.com/bingosummer/azure_storage_service_broker/azure_client"
-
-	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/gomega"
+	"testing"
 )
 
-var _ = Describe("Helpers", func() {
+func TestLoadAzureCredentials(t *testing.T) {
 	var (
 		credentials map[string]string
 		err         error
 	)
 
-	Describe("Loading Azure credentials from environment variables", func() {
-		Context("With all credentials are available", func() {
-			BeforeEach(func() {
-				os.Setenv("subscriptionID", "fake-subscription-id")
-				os.Setenv("tenantID", "fake-tenant-id")
-				os.Setenv("clientID", "fake-client-id")
-				os.Setenv("clientSecret", "fake-client-secret")
-				credentials, err = LoadAzureCredentials()
-			})
+	// With all credentials are available
+	os.Setenv("subscriptionID", "fake-subscription-id")
+	os.Setenv("tenantID", "fake-tenant-id")
+	os.Setenv("clientID", "fake-client-id")
+	os.Setenv("clientSecret", "fake-client-secret")
+	credentials, err = LoadAzureCredentials()
 
-			It("should return the credentails", func() {
-				Expect(credentials["subscriptionID"]).To(Equal("fake-subscription-id"))
-				Expect(credentials["tenantID"]).To(Equal("fake-tenant-id"))
-				Expect(credentials["clientID"]).To(Equal("fake-client-id"))
-				Expect(credentials["clientSecret"]).To(Equal("fake-client-secret"))
-			})
+	if credentials["subscriptionID"] != "fake-subscription-id" {
+		t.Errorf("subscriptionID: got %v; want %v", credentials["subscriptionID"], "fake-subscription-id")
+	}
 
-			It("should not error", func() {
-				Expect(err).NotTo(HaveOccurred())
-			})
-		})
+	if credentials["tenantID"] != "fake-tenant-id" {
+		t.Errorf("tenantID: got %v; want %v", credentials["tenantID"], "fake-tenant-id")
+	}
 
-		Context("With subscriptionID is unavailable", func() {
-			BeforeEach(func() {
-				os.Setenv("subscriptionID", "")
-				credentials, err = LoadAzureCredentials()
-			})
+	if credentials["clientID"] != "fake-client-id" {
+		t.Errorf("clientID: got %v; want %v", credentials["clientID"], "fake-client-id")
+	}
 
-			It("should return the zero-value for credentials", func() {
-				Expect(credentials).To(BeZero())
-			})
+	if credentials["clientSecret"] != "fake-client-secret" {
+		t.Errorf("clientSecret: got %v; want %v", credentials["clientSecret"], "fake-client-secret")
+	}
 
-			It("should error", func() {
-				Expect(err).To(HaveOccurred())
-			})
-		})
+	if err != nil {
+		t.Errorf("Should not error")
+	}
 
-		Context("With tenantID is unavailable", func() {
-			BeforeEach(func() {
-				os.Setenv("tenantID", "")
-				credentials, err = LoadAzureCredentials()
-			})
+	// subscriptionID is unavailable
+	os.Setenv("subscriptionID", "")
+	credentials, err = LoadAzureCredentials()
+	if credentials != nil {
+		t.Errorf("should return the zero-value for credentials")
+	}
+	if err == nil {
+		t.Errorf("Should error")
+	}
+	os.Setenv("subscriptionID", "fake-subscription-id")
 
-			It("should return the zero-value for credentials", func() {
-				Expect(credentials).To(BeZero())
-			})
+	// tenantID is unavailable
+	os.Setenv("tenantID", "")
+	credentials, err = LoadAzureCredentials()
+	if credentials != nil {
+		t.Errorf("should return the zero-value for credentials")
+	}
+	if err == nil {
+		t.Errorf("Should error")
+	}
+	os.Setenv("tenantID", "fake-tenant-id")
 
-			It("should error", func() {
-				Expect(err).To(HaveOccurred())
-			})
-		})
+	// clientID is unavailable
+	os.Setenv("clientID", "")
+	credentials, err = LoadAzureCredentials()
+	if credentials != nil {
+		t.Errorf("should return the zero-value for credentials")
+	}
+	if err == nil {
+		t.Errorf("Should error")
+	}
+	os.Setenv("clientID", "fake-client-id")
 
-		Context("With clientID is unavailable", func() {
-			BeforeEach(func() {
-				os.Setenv("clientID", "")
-				credentials, err = LoadAzureCredentials()
-			})
-
-			It("should return the zero-value for credentials", func() {
-				Expect(credentials).To(BeZero())
-			})
-
-			It("should error", func() {
-				Expect(err).To(HaveOccurred())
-			})
-		})
-
-		Context("With clientSecret is unavailable", func() {
-			BeforeEach(func() {
-				os.Setenv("clientSecret", "")
-				credentials, err = LoadAzureCredentials()
-			})
-
-			It("should return the zero-value for credentials", func() {
-				Expect(credentials).To(BeZero())
-			})
-
-			It("should error", func() {
-				Expect(err).To(HaveOccurred())
-			})
-		})
-	})
-})
+	// clientSecret is unavailable
+	os.Setenv("clientSecret", "")
+	credentials, err = LoadAzureCredentials()
+	if credentials != nil {
+		t.Errorf("should return the zero-value for credentials")
+	}
+	if err == nil {
+		t.Errorf("Should error")
+	}
+}
