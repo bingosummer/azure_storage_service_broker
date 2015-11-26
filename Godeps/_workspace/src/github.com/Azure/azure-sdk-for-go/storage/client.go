@@ -29,6 +29,7 @@ const (
 	blobServiceName  = "blob"
 	tableServiceName = "table"
 	queueServiceName = "queue"
+	fileServiceName  = "file"
 )
 
 // Client is the object that needs to be constructed to perform
@@ -159,6 +160,12 @@ func (c Client) GetQueueService() QueueServiceClient {
 	return QueueServiceClient{c}
 }
 
+// GetFileService returns a FileServiceClient which can operate on the file
+// service of the storage account.
+func (c Client) GetFileService() FileServiceClient {
+	return FileServiceClient{c}
+}
+
 func (c Client) createAuthorizationHeader(canonicalizedString string) string {
 	signature := c.computeHmac256(canonicalizedString)
 	return fmt.Sprintf("%s %s:%s", "SharedKey", c.accountName, signature)
@@ -265,10 +272,10 @@ func (c Client) buildCanonicalizedString(verb string, headers map[string]string,
 		headers["Content-MD5"],
 		headers["Content-Type"],
 		headers["Date"],
-		headers["If-Modified-Singe"],
+		headers["If-Modified-Since"],
 		headers["If-Match"],
 		headers["If-None-Match"],
-		headers["If-Unmodified-Singe"],
+		headers["If-Unmodified-Since"],
 		headers["Range"],
 		c.buildCanonicalizedHeader(headers),
 		canonicalizedResource)

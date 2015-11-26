@@ -5,6 +5,7 @@ import (
 	"crypto/rand"
 	"encoding/base64"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -168,7 +169,7 @@ func (s *StorageBlobSuite) TestContainerExists(c *chk.C) {
 	c.Assert(ok, chk.Equals, true)
 }
 
-func (s *StorageBlobSuite) TestCreateDeleteContainer(c *chk.C) {
+func (s *StorageBlobSuite) TestCreateContainerDeleteContainer(c *chk.C) {
 	cnt := randContainer()
 	cli := getBlobClient(c)
 	c.Assert(cli.CreateContainer(cnt, ContainerAccessTypePrivate), chk.IsNil)
@@ -178,6 +179,7 @@ func (s *StorageBlobSuite) TestCreateDeleteContainer(c *chk.C) {
 func (s *StorageBlobSuite) TestCreateContainerIfNotExists(c *chk.C) {
 	cnt := randContainer()
 	cli := getBlobClient(c)
+	defer cli.DeleteContainer(cnt)
 
 	// First create
 	ok, err := cli.CreateContainerIfNotExists(cnt, ContainerAccessTypePrivate)
@@ -187,7 +189,6 @@ func (s *StorageBlobSuite) TestCreateContainerIfNotExists(c *chk.C) {
 	// Second create, should not give errors
 	ok, err = cli.CreateContainerIfNotExists(cnt, ContainerAccessTypePrivate)
 	c.Assert(err, chk.IsNil)
-	defer cli.DeleteContainer(cnt)
 	c.Assert(ok, chk.Equals, false)
 }
 
@@ -343,6 +344,52 @@ func (s *StorageBlobSuite) TestListBlobsPagination(c *chk.C) {
 	c.Assert(seen, chk.DeepEquals, blobs)
 }
 
+func (s *StorageBlobSuite) TestGetAndSetMetadata(c *chk.C) {
+	cli := getBlobClient(c)
+	cnt := randContainer()
+
+	c.Assert(cli.CreateContainer(cnt, ContainerAccessTypePrivate), chk.IsNil)
+	defer cli.deleteContainer(cnt)
+
+	blob := randString(20)
+	c.Assert(cli.putSingleBlockBlob(cnt, blob, []byte{}), chk.IsNil)
+
+	m, err := cli.GetBlobMetadata(cnt, blob)
+	c.Assert(err, chk.IsNil)
+	c.Assert(m, chk.Not(chk.Equals), nil)
+	c.Assert(len(m), chk.Equals, 0)
+
+	mPut := map[string]string{
+		"foo":     "bar",
+		"bar_baz": "waz qux",
+	}
+
+	err = cli.SetBlobMetadata(cnt, blob, mPut)
+	c.Assert(err, chk.IsNil)
+
+	m, err = cli.GetBlobMetadata(cnt, blob)
+	c.Assert(err, chk.IsNil)
+	c.Check(m, chk.DeepEquals, mPut)
+
+	// Case munging
+
+	mPutUpper := map[string]string{
+		"Foo":     "different bar",
+		"bar_BAZ": "different waz qux",
+	}
+	mExpectLower := map[string]string{
+		"foo":     "different bar",
+		"bar_baz": "different waz qux",
+	}
+
+	err = cli.SetBlobMetadata(cnt, blob, mPutUpper)
+	c.Assert(err, chk.IsNil)
+
+	m, err = cli.GetBlobMetadata(cnt, blob)
+	c.Assert(err, chk.IsNil)
+	c.Check(m, chk.DeepEquals, mExpectLower)
+}
+
 func (s *StorageBlobSuite) TestPutEmptyBlockBlob(c *chk.C) {
 	cli := getBlobClient(c)
 	cnt := randContainer()
@@ -387,6 +434,41 @@ func (s *StorageBlobSuite) TestGetBlobRange(c *chk.C) {
 		str := string(blobBody)
 		c.Assert(str, chk.Equals, r.expected)
 	}
+}
+
+func (s *StorageBlobSuite) TestCreateBlockBlobFromReader(c *chk.C) {
+	cli := getBlobClient(c)
+	cnt := randContainer()
+	c.Assert(cli.CreateContainer(cnt, ContainerAccessTypePrivate), chk.IsNil)
+	defer cli.deleteContainer(cnt)
+
+	name := randString(20)
+	data := randBytes(8888)
+	c.Assert(cli.CreateBlockBlobFromReader(cnt, name, uint64(len(data)), bytes.NewReader(data)), chk.IsNil)
+
+	body, err := cli.GetBlob(cnt, name)
+	c.Assert(err, chk.IsNil)
+	gotData, err := ioutil.ReadAll(body)
+	body.Close()
+
+	c.Assert(err, chk.IsNil)
+	c.Assert(gotData, chk.DeepEquals, data)
+}
+
+func (s *StorageBlobSuite) TestCreateBlockBlobFromReaderWithShortData(c *chk.C) {
+	cli := getBlobClient(c)
+	cnt := randContainer()
+	c.Assert(cli.CreateContainer(cnt, ContainerAccessTypePrivate), chk.IsNil)
+	defer cli.deleteContainer(cnt)
+
+	name := randString(20)
+	data := randBytes(8888)
+	err := cli.CreateBlockBlobFromReader(cnt, name, 9999, bytes.NewReader(data))
+	c.Assert(err, chk.Not(chk.IsNil))
+
+	_, err = cli.GetBlob(cnt, name)
+	// Upload was incomplete: blob should not have been created.
+	c.Assert(err, chk.Not(chk.IsNil))
 }
 
 func (s *StorageBlobSuite) TestPutBlock(c *chk.C) {
@@ -622,4 +704,12 @@ func randString(n int) string {
 		bytes[i] = alphanum[b%byte(len(alphanum))]
 	}
 	return string(bytes)
+}
+
+func randBytes(n int) []byte {
+	data := make([]byte, n)
+	if _, err := io.ReadFull(rand.Reader, data); err != nil {
+		panic(err)
+	}
+	return data
 }

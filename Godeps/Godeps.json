@@ -7,18 +7,18 @@
 	"Deps": [
 		{
 			"ImportPath": "github.com/Azure/azure-sdk-for-go/arm/resources",
-			"Comment": "v1.2-239-ge2131fa",
-			"Rev": "e2131faf42c3593d3447bf642435ecb906d42c7a"
+			"Comment": "v1.2-251-g8d6182f",
+			"Rev": "8d6182f82981ac0e8452301f2aea74bb0407ab5d"
 		},
 		{
 			"ImportPath": "github.com/Azure/azure-sdk-for-go/arm/storage",
-			"Comment": "v1.2-239-ge2131fa",
-			"Rev": "e2131faf42c3593d3447bf642435ecb906d42c7a"
+			"Comment": "v1.2-251-g8d6182f",
+			"Rev": "8d6182f82981ac0e8452301f2aea74bb0407ab5d"
 		},
 		{
 			"ImportPath": "github.com/Azure/azure-sdk-for-go/storage",
-			"Comment": "v1.2-239-ge2131fa",
-			"Rev": "e2131faf42c3593d3447bf642435ecb906d42c7a"
+			"Comment": "v1.2-251-g8d6182f",
+			"Rev": "8d6182f82981ac0e8452301f2aea74bb0407ab5d"
 		},
 		{
 			"ImportPath": "github.com/Azure/go-autorest/autorest",
