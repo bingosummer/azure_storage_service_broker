@@ -5,29 +5,31 @@ import (
 )
 
 type ServiceInstance struct {
-	Id                  string                            `json:"id"`
-	DashboardUrl        string                            `json:"dashboard_url"`
+	Id           string `json:"id"`
+	DashboardUrl string `json:"dashboard_url"`
+
+	// The following items can be provisioned from request body
+	OrganizationGuid string      `json:"organization_guid"`
+	PlanId           string      `json:"plan_id"`
+	ServiceId        string      `json:"service_id"`
+	SpaceGuid        string      `json:"space_guid"`
+	Parameters       interface{} `json:"parameters, omitempty"`
+
+	// The following items are the allowed parameters
 	ResourceGroupName   string                            `json:"resource_group_name, omitempty"`
 	StorageAccountName  string                            `json:"storage_account_name, omitempty"`
 	ContainerAccessType storageclient.ContainerAccessType `json:"container_access_type, omitempty"`
-	AcceptsIncomplete   string                            `json:"accepts_incomplete"`
-	ServiceId           string                            `json:"service_id"`
-	PlanId              string                            `json:"plan_id"`
-	OrganizationGuid    string                            `json:"organization_guid"`
-	SpaceGuid           string                            `json:"space_guid"`
 
-	LastOperation *LastOperation `json:"last_operation, omitempty"`
-
-	Parameters interface{} `json:"parameters, omitempty"`
-}
-
-type LastOperation struct {
-	State                    string `json:"state"`
-	Description              string `json:"description"`
-	AsyncPollIntervalSeconds int    `json:"async_poll_interval_seconds, omitempty"`
+	// The following items are for last operations
+	State       string `json:"state"`
+	Description string `json:"description"`
 }
 
 type CreateServiceInstanceResponse struct {
-	DashboardUrl  string         `json:"dashboard_url"`
-	LastOperation *LastOperation `json:"last_operation, omitempty"`
+	DashboardUrl string `json:"dashboard_url"`
+}
+
+type CreateLastOperationResponse struct {
+	State       string `json:"state"`
+	Description string `json:"description"`
 }

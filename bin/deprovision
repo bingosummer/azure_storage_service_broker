@@ -6,4 +6,4 @@ bin=$(dirname $0)
 
 instance_id=`cat $bin/instance_id`
 
-http --auth-type basic --auth $authUsername:$authPassword DELETE 127.0.0.1:8001/v2/service_instances/$instance_id
+curl "http://localhost:8001/v2/service_instances/$instance_id?service_id=3&plan_id=2" -u $authUsername:$authPassword -X DELETE -H "X-Broker-API-Version: 2.7" -v

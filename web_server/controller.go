@@ -17,9 +17,8 @@ import (
 )
 
 const (
-	DEFAULT_POLLING_INTERVAL_SECONDS = 10
-	X_BROKER_API_VERSION_NAME        = "X-Broker-Api-Version"
-	X_BROKER_API_VERSION             = "2.5"
+	X_BROKER_API_VERSION_NAME = "X-Broker-Api-Version"
+	X_BROKER_API_VERSION      = "2.5"
 )
 
 type Controller struct {
@@ -80,6 +79,7 @@ func (c *Controller) CreateServiceInstance(w http.ResponseWriter, r *http.Reques
 	}
 
 	var instance model.ServiceInstance
+	instance.DashboardUrl = "http://dashbaord_url"
 
 	err = utils.ProvisionDataFromRequest(r, &instance)
 	if err != nil {
@@ -88,7 +88,7 @@ func (c *Controller) CreateServiceInstance(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	acceptsIncomplete := instance.AcceptsIncomplete
+	acceptsIncomplete := r.URL.Query().Get("accepts_incomplete")
 	if acceptsIncomplete != "true" {
 		fmt.Println("Only asynchronous provisioning is supported")
 		response := make(map[string]string)
@@ -99,6 +99,7 @@ func (c *Controller) CreateServiceInstance(w http.ResponseWriter, r *http.Reques
 	}
 
 	serviceInstanceGuid := utils.ExtractVarsFromRequest(r, "service_instance_guid")
+	instance.Id = serviceInstanceGuid
 
 	var containerAccessType storageclient.ContainerAccessType
 	switch instance.Parameters.(type) {
@@ -123,13 +124,9 @@ func (c *Controller) CreateServiceInstance(w http.ResponseWriter, r *http.Reques
 	instance.ResourceGroupName = resourceGroupName
 	instance.StorageAccountName = storageAccountName
 	instance.ContainerAccessType = containerAccessType
-	instance.DashboardUrl = "http://dashbaord_url"
-	instance.Id = serviceInstanceGuid
-	instance.LastOperation = &model.LastOperation{
-		State:                    "in progress",
-		Description:              "creating service instance...",
-		AsyncPollIntervalSeconds: DEFAULT_POLLING_INTERVAL_SECONDS,
-	}
+
+	instance.State = "in progress"
+	instance.Description = "creating service instance..."
 
 	c.instanceMap[instance.Id] = &instance
 	err = utils.MarshalAndRecord(c.instanceMap, conf.DataPath, conf.ServiceInstancesFileName)
@@ -139,8 +136,7 @@ func (c *Controller) CreateServiceInstance(w http.ResponseWriter, r *http.Reques
 	}
 
 	response := model.CreateServiceInstanceResponse{
-		DashboardUrl:  instance.DashboardUrl,
-		LastOperation: instance.LastOperation,
+		DashboardUrl: instance.DashboardUrl,
 	}
 	utils.WriteResponse(w, http.StatusAccepted, response)
 }
@@ -172,14 +168,14 @@ func (c *Controller) GetServiceInstance(w http.ResponseWriter, r *http.Request) 
 	}
 
 	if state == storage.Creating || state == storage.ResolvingDNS {
-		instance.LastOperation.State = "in progress"
-		instance.LastOperation.Description = "Creating service instance, state: " + string(state)
+		instance.State = "in progress"
+		instance.Description = "Creating the service instance, state: " + string(state)
 	} else if state == storage.Succeeded {
-		instance.LastOperation.State = "succeeded"
-		instance.LastOperation.Description = "Successfully created service instance"
+		instance.State = "succeeded"
+		instance.Description = "Successfully created the service instance, state: " + string(state)
 	} else {
-		instance.LastOperation.State = "failed"
-		instance.LastOperation.Description = "Failed to create service instance"
+		instance.State = "failed"
+		instance.Description = "Failed to create the service instance, state: " + string(state)
 	}
 
 	err = utils.MarshalAndRecord(c.instanceMap, conf.DataPath, conf.ServiceInstancesFileName)
@@ -188,9 +184,9 @@ func (c *Controller) GetServiceInstance(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	response := model.CreateServiceInstanceResponse{
-		DashboardUrl:  instance.DashboardUrl,
-		LastOperation: instance.LastOperation,
+	response := model.CreateLastOperationResponse{
+		State:       instance.State,
+		Description: instance.Description,
 	}
 	utils.WriteResponse(w, http.StatusOK, response)
 }
@@ -230,7 +226,8 @@ func (c *Controller) RemoveServiceInstance(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	utils.WriteResponse(w, http.StatusOK, "{}")
+	response := make(map[string]string)
+	utils.WriteResponse(w, http.StatusOK, response)
 }
 
 func (c *Controller) Bind(w http.ResponseWriter, r *http.Request) {
@@ -315,7 +312,8 @@ func (c *Controller) UnBind(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	utils.WriteResponse(w, http.StatusOK, "{}")
+	response := make(map[string]string)
+	utils.WriteResponse(w, http.StatusOK, response)
 }
 
 func (c *Controller) deleteAssociatedBindings(instanceId string) error {
@@ -328,7 +326,6 @@ func (c *Controller) deleteAssociatedBindings(instanceId string) error {
 	return utils.MarshalAndRecord(c.bindingMap, conf.DataPath, conf.ServiceBindingsFileName)
 }
 
-// Private
 func authentication(r *http.Request) (int, error) {
 	authUsername, authPassword, err := loadAuthCredentials()
 	if err != nil {

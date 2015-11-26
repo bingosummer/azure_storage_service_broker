@@ -6,4 +6,4 @@ bin=$(dirname $0)
 
 instance_id=`cat $bin/instance_id`
 
-http --auth-type basic --auth $authUsername:$authPassword GET 127.0.0.1:8001/v2/service_instances/$instance_id/last_operation
+curl http://localhost:8001/v2/service_instances/$instance_id/last_operation -u $authUsername:$authPassword -v
