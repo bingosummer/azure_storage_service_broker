@@ -168,7 +168,7 @@ blob_service = BlobService(account_name, account_key)
 15. Delete the service broker
 
   ```
-  cf delete azure-storage-service-broker -f -r
+  cf delete azure_storage_service_broker -f -r
   ```
 
 16. Delete the application
