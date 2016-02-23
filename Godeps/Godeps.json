@@ -1,9 +1,6 @@
 {
 	"ImportPath": "github.com/bingosummer/azure_storage_service_broker",
-	"GoVersion": "go1.5.1",
-	"Packages": [
-		"./..."
-	],
+	"GoVersion": "go1.6",
 	"Deps": [
 		{
 			"ImportPath": "github.com/Azure/azure-sdk-for-go/arm/resources",
