@@ -92,7 +92,7 @@ blob_service = BlobService(account_name, account_key)
 3. Make the service public
 
   ```
-  cf enable-service-access azurestorage
+  cf enable-service-access azurestorageblob
   ```
 
 4. Show the service in the marketplace 
@@ -104,7 +104,7 @@ blob_service = BlobService(account_name, account_key)
 5. Create a service instance
 
   ```
-  cf create-service azurestorage default myblobservice
+  cf create-service azurestorageblob default myblobservice
   ```
 
 6. Check the operation status of creating the service instance

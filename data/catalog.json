@@ -1,7 +1,7 @@
 {
   "services": [
     {
-      "name": "azurestorage",
+      "name": "azurestorageblob",
       "id": "azure-storage-service-guid",
       "description": "Provides Azure Storage Service, including storage account creation, container creation, access key generation",
       "requires": [],
