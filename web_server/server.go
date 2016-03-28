@@ -41,7 +41,7 @@ func (s *Server) Start() {
 
 	http.Handle("/", router)
 
-	port := os.Getenv("VCAP_APP_PORT")
+	port := os.Getenv("PORT")
 	if port == "" {
 		port = conf.Port
 	}
